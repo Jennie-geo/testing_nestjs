@@ -1,12 +1,18 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 import { UserAuth } from './interface';
 import * as bcrypt from 'bcrypt';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
   async signup(userDetails: UserAuth) {
     try {
       //hash user password
@@ -18,8 +24,7 @@ export class AuthService {
           hash_password,
         },
       });
-      delete createUser.hash_password;
-      return createUser;
+      return this.signToken(createUser.id, createUser.email);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -42,7 +47,21 @@ export class AuthService {
     );
     if (passwordMatches)
       throw new ForbiddenException('Password does not match');
-    delete user.hash_password;
-    return user;
+    return this.signToken(user.id, user.email);
+  }
+
+  // function type : Promise<{ access_token: string }>
+  async signToken(userId: number, email: string) {
+    const payload = {
+      sub: userId,
+      email,
+    };
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '20m',
+      secret: this.config.get('JWT_SECRET'),
+    });
+    return {
+      access_token: token,
+    };
   }
 }
