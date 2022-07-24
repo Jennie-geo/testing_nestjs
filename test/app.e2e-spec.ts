@@ -2,6 +2,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as pactum from 'pactum'; //Pactum is a request marking api, it needs a server to make request
 import { UserAuth } from 'src/auth/interface';
+import { EditUserDto } from 'src/user/dto';
+
 import { PrismaService } from '.././src/prisma/prisma.service';
 import { AppModule } from '../src/app.module';
 
@@ -113,8 +115,22 @@ describe('Start testing the app', () => {
           .stores('userAt', 'access_token');
       });
     });
-    describe('Edit', () => {
-      it.todo('should  a user be updated');
+  });
+  describe('Edit', () => {
+    it('should  a user be updated', () => {
+      const dto: EditUserDto = {
+        firstName: 'Nkemdi',
+        email: 'queensydilichi2@gmail.com',
+      };
+      return pactum
+        .spec()
+        .patch('/users')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .withBody(dto)
+        .expectStatus(200)
+        .inspect();
     });
   });
   describe('Bookmark', () => {
@@ -124,8 +140,8 @@ describe('Start testing the app', () => {
     describe('Get Bookmarks', () => {
       it.todo('get bookmarks');
     });
-    describe('Get Bookmark by id', () => {});
-    describe('Edit', () => {});
-    describe('Delete Bookmark', () => {});
+    // describe('Get Bookmark by id', () => {});
+    // describe('Edit', () => {});
+    // describe('Delete Bookmark', () => {});
   });
 });
