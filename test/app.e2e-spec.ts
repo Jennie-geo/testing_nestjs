@@ -101,10 +101,20 @@ describe('Start testing the app', () => {
   });
   describe('User', () => {
     describe('Get user', () => {
-      it.todo('should a user exist');
+      it('should a user exist', () => {
+        return pactum
+          .spec()
+          .get('/users/loginuser')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .inspect()
+          .stores('userAt', 'access_token');
+      });
     });
     describe('Edit', () => {
-      it.todo('should a user be updated');
+      it.todo('should  a user be updated');
     });
   });
   describe('Bookmark', () => {
