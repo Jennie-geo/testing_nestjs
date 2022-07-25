@@ -197,7 +197,6 @@ describe('Start testing the app', () => {
         })
         .withBody(dto)
         .expectStatus(200)
-        .expectBody([])
         .inspect();
     });
   });
@@ -214,5 +213,17 @@ describe('Start testing the app', () => {
         .expectBody([])
         .inspect();
     });
+  });
+  it('should get empty', () => {
+    return pactum
+      .spec()
+      .delete('/bookmarks/{id}')
+      .withPathParams('id', '$S{bookmarkId}')
+      .withHeaders({
+        Authorization: 'Bearer $S{userAt}',
+      })
+      .expectStatus(200)
+      .expectJsonLength(0)
+      .inspect();
   });
 });
