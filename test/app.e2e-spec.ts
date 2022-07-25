@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as pactum from 'pactum'; //Pactum is a request marking api, it needs a server to make request
 import { UserAuth } from 'src/auth/interface';
+import { CreateBookmarkDto, EditBookmarkDto } from 'src/bookmark/dto';
 import { EditUserDto } from 'src/user/dto';
 
 import { PrismaService } from '.././src/prisma/prisma.service';
@@ -134,14 +135,84 @@ describe('Start testing the app', () => {
     });
   });
   describe('Bookmark', () => {
-    describe('Create Bookmark', () => {
-      it.todo('should a user create a bookmark');
+    describe('Get Empty Bookmarks', () => {
+      it('she should get bookmarks', () => {
+        return pactum
+          .spec()
+          .get('/bookmarks')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBody([])
+          .inspect();
+      });
     });
-    describe('Get Bookmarks', () => {
-      it.todo('get bookmarks');
+  });
+
+  describe('Create Bookmark', () => {
+    const dto: CreateBookmarkDto = {
+      title: 'First Book written',
+      description: 'the universal truth of agodo the goddess',
+      link: 'https://linkedin.com',
+    };
+    it('should create a bookmark', () => {
+      return pactum
+        .spec()
+        .post('/bookmarks')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .expectStatus(201)
+        .withBody(dto)
+        .stores('bookmarkId', 'id');
     });
-    // describe('Get Bookmark by id', () => {});
-    // describe('Edit', () => {});
-    // describe('Delete Bookmark', () => {});
+  });
+  describe('Get Bookmark by id', () => {
+    it('she should get bookmarks by id', () => {
+      return pactum
+        .spec()
+        .get('/bookmarks/{id}')
+        .withPathParams('id', '$S{bookmarkId}')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .expectStatus(200)
+        .expectBody([])
+        .inspect();
+    });
+  });
+  describe('Edit', () => {
+    const dto: EditBookmarkDto = {
+      title: 'the important of financial stability in women',
+      description: 'Becoming a woman demands hard work.',
+    };
+    it('should edit bookmark', () => {
+      return pactum
+        .spec()
+        .patch('/bookmarks/{id}')
+        .withPathParams('id', '$S{bookmarkId}')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .withBody(dto)
+        .expectStatus(200)
+        .expectBody([])
+        .inspect();
+    });
+  });
+  describe('Delete Bookmark', () => {
+    it('should delete bookmark', () => {
+      return pactum
+        .spec()
+        .delete('/bookmarks/{id}')
+        .withPathParams('id', '$S{bookmarkId}')
+        .withHeaders({
+          Authorization: 'Bearer $S{userAt}',
+        })
+        .expectStatus(204)
+        .expectBody([])
+        .inspect();
+    });
   });
 });
